@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Database Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .error { color: red; background-color: #ffe6e6; padding: 10px; margin: 10px 0; }
+        .success { color: green; background-color: #e6ffe6; padding: 10px; margin: 10px 0; }
+        .debug-info { background-color: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Staff Database Debug Page</h1>
+    
+    <div class="debug-info">
+        <h3>Database Information</h3>
+        <p><strong>Total Staff Count:</strong> <span th:text="${staffCount}">0</span></p>
+    </div>
+
+    <div th:if="${error}" class="error">
+        <h3>Error:</h3>
+        <p th:text="${error}">No error</p>
+    </div>
+
+    <div th:if="${message}" class="success">
+        <h3>Success:</h3>
+        <p th:text="${message}">No message</p>
+    </div>
+
+    <div th:if="${staffList != null and !staffList.isEmpty()}">
+        <h3>Staff in Database:</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Password</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="staff : ${staffList}">
+                    <td th:text="${staff.id}">ID</td>
+                    <td th:text="${staff.name}">Name</td>
+                    <td th:text="${staff.email}">Email</td>
+                    <td th:text="${staff.role}">Role</td>
+                    <td th:text="${staff.password}">Password</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${staffList == null or staffList.isEmpty()}">
+        <p><strong>No staff found in database!</strong></p>
+        <p>This might indicate a database connection issue or the staff table hasn't been created yet.</p>
+    </div>
+
+    <hr>
+    <div>
+        <h3>Quick Actions:</h3>
+        <a href="/staff/login">← Back to Login</a> | 
+        <a href="/staff/debug">🔄 Refresh Debug</a>
+    </div>
+
+    <div class="debug-info">
+        <h3>Test Credentials:</h3>
+        <ul>
+            <li><strong>Admin:</strong> admin@company.com / admin123</li>
+            <li><strong>Manager:</strong> manager@company.com / manager123</li>
+            <li><strong>Booking:</strong> booking@company.com / booking123</li>
+            <li><strong>Marketing:</strong> marketing@company.com / marketing123</li>
+            <li><strong>Captain:</strong> captain@company.com / captain123</li>
+        </ul>
+    </div>
+</body>
+</html>

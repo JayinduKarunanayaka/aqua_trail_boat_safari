@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|${trip.tripName} - Aqua Trail Boat Safari|">Trip Details</title>
+    <link rel="stylesheet" th:href="@{/user/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="trip-details">
+            <img th:src="${trip.imageUrl}" th:alt="${trip.tripName}" class="trip-details-image"
+                 onerror="this.src='https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=900&h=400&fit=crop'">
+            
+            <div class="trip-details-content">
+                <h1 th:text="${trip.tripName}" class="trip-details-title">Trip Name</h1>
+                
+                <div class="trip-details-meta">
+                    <div class="detail-item">
+                        <div class="label">🕰️ Duration</div>
+                        <div class="value" th:text="${trip.duration}">Duration</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">💰 Price</div>
+                        <div class="value" th:text="|LKR ${trip.price}|">Price</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">✅ Status</div>
+                        <div class="value" th:text="${trip.status}" 
+                             th:style="${trip.status == 'active' ? 'color: #27ae60;' : 'color: #e74c3c;'}">Status</div>
+                    </div>
+                </div>
+                
+                <div class="trip-description-full">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.3rem;">🌊 About This Adventure</h3>
+                    <p th:text="${trip.description}">Trip description will appear here...</p>
+                </div>
+                
+                <div class="trip-actions">
+                    <button th:if="${trip.status == 'active'}" class="book-trip-btn" onclick="bookTrip()" id="bookButton">
+                        🎆 Book This Adventure
+                    </button>
+                    <button th:unless="${trip.status == 'active'}" class="book-trip-btn" disabled 
+                            style="background: #dc3545; cursor: not-allowed; opacity: 0.6;">
+                        ❌ Currently Unavailable
+                    </button>
+                    <a th:href="@{/}" class="back-btn">
+                        ← Back to Adventures
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Confirmation Modal -->
+    <div id="bookingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; backdrop-filter: blur(5px);">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <h3 style="color: #2c3e50; margin-bottom: 20px; font-size: 1.8rem;">🎆 Confirm Your Booking</h3>
+            <p style="margin-bottom: 25px; color: #666; font-size: 1.1rem;">Please provide your details to complete the booking:</p>
+            
+            <form id="bookingForm" style="text-align: left; margin-bottom: 25px;">
+                <input type="hidden" id="tripId" th:value="${trip.id}">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #2c3e50;">Full Name:</label>
+                    <input type="text" id="customerName" required style="width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" placeholder="Enter your full name">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #2c3e50;">Email Address:</label>
+                    <input type="email" id="customerEmail" required style="width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem;" placeholder="Enter your email">
+                </div>
+            </form>
+            
+            <div style="margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 15px; border: 2px solid #667eea;">
+                <strong th:text="${trip.tripName}" style="font-size: 1.2rem; color: #2c3e50;">Trip Name</strong><br><br>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Duration:</span>
+                    <span th:text="${trip.duration}" style="font-weight: 600;">Duration</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #666;">Total Amount:</span>
+                    <span th:text="|LKR ${trip.price}|" style="color: #27ae60; font-size: 1.4rem; font-weight: bold;">Price</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button onclick="confirmBooking()" style="flex: 1; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; border: none; padding: 15px 25px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 1rem; transition: all 0.3s ease;">
+                    ✓ Confirm Booking
+                </button>
+                <button onclick="closeModal()" style="flex: 1; background: #6c757d; color: white; border: none; padding: 15px 25px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function bookTrip() {
+            document.getElementById('bookingModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function confirmBooking() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerEmail = document.getElementById('customerEmail').value.trim();
+            
+            console.log('Form values:', { customerName, customerEmail });
+            
+            if (!customerName || !customerEmail) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            if (!customerEmail.includes('@') || !customerEmail.includes('.')) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+            
+            // Get trip ID
+            const tripId = document.getElementById('tripId').value;
+            console.log('Trip ID:', tripId);
+            
+            if (!tripId) {
+                alert('Error: Trip ID not found. Please refresh the page and try again.');
+                return;
+            }
+            
+            // Disable the confirm button to prevent double submission
+            const confirmBtn = event.target;
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Processing...';
+            
+            // Send booking data to backend
+            const formData = new FormData();
+            formData.append('tripId', tripId);
+            formData.append('customerName', customerName);
+            formData.append('customerEmail', customerEmail);
+            
+            console.log('Sending booking request:', {
+                tripId: tripId,
+                customerName: customerName,
+                customerEmail: customerEmail
+            });
+            
+            fetch('/book-trip', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                return response.text();
+            })
+            .then(result => {
+                console.log('Server response:', result);
+                
+                // Re-enable button
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '✓ Confirm Booking';
+                
+                if (result === 'success') {
+                    // Change button to "Booked" state
+                    const bookButton = document.getElementById('bookButton');
+                    if (bookButton) {
+                        bookButton.innerHTML = '✓ Booked';
+                        bookButton.style.background = '#27ae60';
+                        bookButton.disabled = true;
+                        bookButton.style.cursor = 'not-allowed';
+                        bookButton.onclick = null;
+                    }
+                    
+                    // Success animation
+                    const modal = document.getElementById('bookingModal');
+                    modal.innerHTML = `
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                            <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+                            <h3 style="color: #27ae60; margin-bottom: 20px; font-size: 1.8rem;">Booking Confirmed!</h3>
+                            <p style="color: #666; font-size: 1.1rem; margin-bottom: 25px;">Thank you for choosing Aqua Trail Boat Safari!<br>You will receive a confirmation email shortly with your booking details and payment instructions.</p>
+                            <div style="display: flex; gap: 15px; justify-content: center;">
+                                <button onclick="window.location.href='/bookings'" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 1rem;">View My Bookings</button>
+                                <button onclick="closeModal()" style="flex: 1; background: #6c757d; color: white; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 1rem;">Continue Exploring</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                        closeModal();
+                    }, 5000);
+                } else {
+                    alert('Booking failed: ' + result + '. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Network error:', error);
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '✓ Confirm Booking';
+                alert('Booking failed due to network error. Please check your connection and try again.');
+            });
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Add entrance animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const tripDetails = document.querySelector('.trip-details');
+            tripDetails.style.opacity = '0';
+            tripDetails.style.transform = 'translateY(30px)';
+            setTimeout(() => {
+                tripDetails.style.transition = 'all 0.8s ease';
+                tripDetails.style.opacity = '1';
+                tripDetails.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

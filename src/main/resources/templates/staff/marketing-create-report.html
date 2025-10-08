@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Report - Aqua Trail Boat Safari</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .create-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #FFD700;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #FFD700;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(108, 117, 125, 0.8);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(108, 117, 125, 1);
+            transform: translateY(-2px);
+        }
+
+        .form-help {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .required {
+            color: #ff6b6b;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .success-message, .error-message {
+            display: none;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid rgba(40, 167, 69, 0.5);
+            color: #28a745;
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.5);
+            color: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .form-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="create-container">
+        <div class="header">
+            <h1>Create New Report</h1>
+            <p th:text="|Create a personal report, ${staff.name}|">Create a personal report</p>
+        </div>
+
+        <div class="form-container">
+            <div id="success-message" class="success-message">
+                ✅ Report created successfully!
+            </div>
+            <div id="error-message" class="error-message">
+                ❌ Error creating report. Please try again.
+            </div>
+
+            <form id="reportForm">
+                <div class="form-group">
+                    <label for="title" class="form-label">Report Title <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" class="form-input" 
+                           placeholder="Enter a descriptive title for your report" required>
+                    <div class="form-help">Choose a clear, descriptive title that summarizes your report's purpose.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reportType" class="form-label">Report Type <span class="required">*</span></label>
+                    <select id="reportType" name="reportType" class="form-select" required>
+                        <option value="">Select report type</option>
+                        <option value="analytics">Analytics Report</option>
+                        <option value="monthly">Monthly Summary</option>
+                        <option value="campaign">Campaign Analysis</option>
+                        <option value="strategy">Marketing Strategy</option>
+                        <option value="performance">Performance Review</option>
+                        <option value="custom">Custom Report</option>
+                    </select>
+                    <div class="form-help">Select the category that best describes your report.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content" class="form-label">Report Content <span class="required">*</span></label>
+                    <textarea id="content" name="content" class="form-textarea" 
+                              placeholder="Write your detailed report content here..." required></textarea>
+                    <div class="form-help">Include all relevant details, analysis, insights, and recommendations in your report.</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        📄 Create Report
+                    </button>
+                    <a href="/staff/marketing/reports" class="btn btn-secondary">
+                        ← Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">
+        <div>Creating report... Please wait</div>
+    </div>
+
+    <script>
+        document.getElementById('reportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value.trim();
+            const reportType = document.getElementById('reportType').value;
+            const content = document.getElementById('content').value.trim();
+            
+            if (!title || !reportType || !content) {
+                showError('Please fill in all required fields.');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'flex';
+            
+            // Create FormData
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('reportType', reportType);
+            formData.append('content', content);
+            
+            // Submit form
+            fetch('/staff/marketing/save-report', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data === 'success') {
+                    showSuccess();
+                    // Reset form
+                    document.getElementById('reportForm').reset();
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/staff/marketing/reports';
+                    }, 2000);
+                } else {
+                    showError('Failed to create report: ' + data);
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                showError('Network error. Please try again.');
+                console.error('Error:', error);
+            });
+        });
+        
+        function showSuccess() {
+            const successMsg = document.getElementById('success-message');
+            const errorMsg = document.getElementById('error-message');
+            successMsg.style.display = 'block';
+            errorMsg.style.display = 'none';
+            successMsg.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showError(message) {
+            const successMsg = document.getElementById('success-message');
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.textContent = '❌ ' + message;
+            errorMsg.style.display = 'block';
+            successMsg.style.display = 'none';
+            errorMsg.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aqua Trail - Boat Tours & River Adventures</title>
+    <link rel="stylesheet" th:href="@{/user/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚤 Aqua Trail Boat Safari</h1>
+            <div class="header-nav">
+                <a href="/feedback" class="my-bookings-btn">💬 Feedback</a>
+                <a href="/bookings" class="my-bookings-btn">📝 My Bookings</a>
+            </div>
+        </div>
+
+        <div th:if="${trips != null and !trips.empty}" class="trips-grid">
+            <div th:each="trip : ${trips}" class="trip-card" th:onclick="|window.location.href='@{/trip/{id}(id=${trip.id})}'|">
+                <div th:text="${trip.status}" 
+                     th:class="${trip.status == 'active' ? 'status-badge' : 'status-badge status-inactive'}">Status</div>
+                
+                <img th:src="${trip.imageUrl}" th:alt="${trip.tripName}" class="trip-image" 
+                     onerror="this.src='https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=500&h=300&fit=crop'">
+                
+                <div class="trip-content">
+                    <h3 th:text="${trip.tripName}" class="trip-title">Trip Name</h3>
+                    
+                    <div th:text="${trip.duration}" class="trip-duration">Duration</div>
+                    
+                    <p th:text="${trip.description}" class="trip-description">Trip description</p>
+                    
+                    <div class="trip-footer">
+                        <div th:text="${trip.price}" class="trip-price">Price</div>
+                        <a th:href="@{/trip/{id}(id=${trip.id})}" class="view-details-btn" onclick="event.stopPropagation()">
+                            Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${trips == null or trips.empty}" class="no-trips">
+            <h2>🌊 No Adventures Available</h2>
+            <p>Our boat tours are currently being prepared. Check back soon for amazing water adventures!</p>
+        </div>
+    </div>
+
+    <script>
+        // Add loading animation for trip cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.trip-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

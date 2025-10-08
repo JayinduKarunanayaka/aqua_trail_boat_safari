@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Trips - Aqua Trail Boat Safari</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .trips-grid {
+            display: grid;
+            gap: 25px;
+        }
+        .trip-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .trip-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .trip-id {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .trip-status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .status-active { background: #e8f5e8; color: #2e7d32; }
+        .status-inactive { background: #ffebee; color: #c62828; }
+        .trip-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e8ed;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .assignment-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            grid-column: 1 / -1;
+            margin: 10px 0;
+        }
+        .assignment-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .assignment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            grid-column: 1 / -1;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc3545 0%, #a71e2a 100%);
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .no-trips {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container { margin: 10px; padding: 20px; }
+            .trip-form { grid-template-columns: 1fr; }
+            .assignment-grid { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/staff/admin" class="back-link">← Back to Admin Dashboard</a>
+        
+        <div class="header">
+            <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+            <h2>🌊 Manage Trip Details</h2>
+            <p style="color: #666;">Admin: <strong th:text="${staff.name}">Admin Name</strong></p>
+        </div>
+
+        <div th:if="${error}" class="alert alert-error" th:text="${error}">Error message</div>
+
+        <div class="stats-card">
+            <div class="stats-number" th:text="${tripsCount}">0</div>
+            <div>Total Trips in System</div>
+        </div>
+
+        <div th:if="${tripsCount == 0}" class="no-trips">
+            <h3>No Trips Found</h3>
+            <p>No trips have been created yet. Booking officers can create new trips.</p>
+        </div>
+
+        <div th:if="${tripsCount > 0}" class="trips-grid">
+            <div th:each="trip : ${trips}" class="trip-card">
+                <div class="trip-header">
+                    <span class="trip-id">Trip #<span th:text="${trip.id}">1</span></span>
+                    <span class="trip-status" th:classappend="'status-' + ${trip.status}" th:text="${trip.status}">active</span>
+                </div>
+
+                <form class="trip-form" onsubmit="updateTrip(event, this)" th:data-trip-id="${trip.id}">
+                    <div class="form-group">
+                        <label>Trip Name</label>
+                        <input type="text" name="tripName" th:value="${trip.tripName}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <input type="text" name="duration" th:value="${trip.duration}" placeholder="02:30:00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Price (LKR)</label>
+                        <input type="number" name="price" step="0.01" th:value="${trip.price}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="status">
+                            <option value="active" th:selected="${trip.status == 'active'}">Active</option>
+                            <option value="inactive" th:selected="${trip.status == 'inactive'}">Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Description</label>
+                        <textarea name="description" rows="3" th:text="${trip.description}"></textarea>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Image URL</label>
+                        <input type="url" name="imageUrl" th:value="${trip.imageUrl}">
+                    </div>
+
+                    <div class="assignment-section">
+                        <div class="assignment-title">🎯 Assignments</div>
+                        <div class="assignment-grid">
+                            <div class="form-group">
+                                <label>Assigned Captain</label>
+                                <select name="captainName">
+                                    <option value="">No Captain Assigned</option>
+                                    <option th:each="captain : ${captains}" 
+                                            th:value="${captain.name}" 
+                                            th:text="${captain.name}"
+                                            th:selected="${trip.captainName == captain.name}">Captain Name</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Assigned Boat</label>
+                                <select name="boatName">
+                                    <option value="">No Boat Assigned</option>
+                                    <option value="River Explorer" th:selected="${trip.boatName == 'River Explorer'}">River Explorer</option>
+                                    <option value="Aqua Adventure" th:selected="${trip.boatName == 'Aqua Adventure'}">Aqua Adventure</option>
+                                    <option value="Safari Queen" th:selected="${trip.boatName == 'Safari Queen'}">Safari Queen</option>
+                                    <option value="Ocean Breeze" th:selected="${trip.boatName == 'Ocean Breeze'}">Ocean Breeze</option>
+                                    <option value="Island Hopper" th:selected="${trip.boatName == 'Island Hopper'}">Island Hopper</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">💾 Update Trip</button>
+                        <button type="button" class="btn btn-danger" onclick="toggleStatus(this)">
+                            <span th:if="${trip.status == 'active'}">❌ Deactivate</span>
+                            <span th:if="${trip.status == 'inactive'}">✅ Activate</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTrip(event, form) {
+            event.preventDefault();
+            
+            const tripId = form.getAttribute('data-trip-id');
+            const formData = new FormData(form);
+            formData.append('tripId', tripId);
+            
+            const submitBtn = form.querySelector('.btn-primary');
+            const originalText = submitBtn.textContent;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+            
+            // Remove existing alerts
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert && !existingAlert.textContent.includes('Error message')) {
+                existingAlert.remove();
+            }
+            
+            fetch('/staff/admin/update-trip', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success';
+                    alert.textContent = '✅ Trip updated successfully!';
+                    
+                    const container = document.querySelector('.container');
+                    const header = document.querySelector('.header');
+                    container.insertBefore(alert, header.nextSibling);
+                    
+                    setTimeout(() => alert.remove(), 3000);
+                } else {
+                    throw new Error(result.replace('error: ', ''));
+                }
+            })
+            .catch(error => {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = '❌ Error: ' + error.message;
+                
+                const container = document.querySelector('.container');
+                const header = document.querySelector('.header');
+                container.insertBefore(alert, header.nextSibling);
+                
+                setTimeout(() => alert.remove(), 5000);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            });
+        }
+
+        function toggleStatus(button) {
+            const form = button.closest('form');
+            const statusSelect = form.querySelector('select[name="status"]');
+            const currentStatus = statusSelect.value;
+            
+            statusSelect.value = currentStatus === 'active' ? 'inactive' : 'active';
+            
+            // Submit the form
+            updateTrip(new Event('submit'), form);
+        }
+    </script>
+</body>
+</html>

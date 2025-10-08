@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Customer Bookings - Aqua Trail Boat Safari</title>
+    <link rel="stylesheet" th:href="@{/staff/style.css}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="brand-section">
+                    <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+                    <p class="brand-subtitle">Customer Bookings Management</p>
+                </div>
+                <div class="user-section">
+                    <div class="user-info">
+                        <span class="user-name" th:text="${staff.name}">Booking Officer</span>
+                        <span class="user-role">Booking Officer</span>
+                    </div>
+                    <a th:href="@{/staff/booking}" class="back-btn">🏠 Dashboard</a>
+                    <a th:href="@{/staff/logout}" class="logout-btn">🔓 Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Trip Selection Section -->
+        <section class="trip-selection-section">
+            <div class="section-header">
+                <h2>📋 Select Trip to View Bookings</h2>
+                <p>Choose a trip to see customer bookings and details</p>
+            </div>
+
+            <div th:if="${trips != null and !trips.empty}" class="trips-container">
+                <div th:each="trip : ${trips}" class="trip-select-card" th:data-trip-id="${trip.id}" onclick="selectTrip(this)">
+                    <div class="trip-image">
+                        <img th:src="${trip.imageUrl}" th:alt="${trip.tripName}" 
+                             onerror="this.src='https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop'">
+                    </div>
+                    <div class="trip-info">
+                        <h4 th:text="${trip.tripName}">Trip Name</h4>
+                        <div class="trip-details">
+                            <span class="duration" th:text="|Duration: ${trip.duration}|">Duration</span>
+                            <span class="price" th:text="|LKR ${trip.price}|">Price</span>
+                        </div>
+                        <div class="trip-status" th:text="|Status: ${trip.status}|">Status</div>
+                    </div>
+                    <div class="select-indicator">📋</div>
+                </div>
+            </div>
+
+            <div th:if="${trips == null or trips.empty}" class="no-trips">
+                <div class="no-trips-content">
+                    <div class="empty-icon">🚤</div>
+                    <h3>No Trips Available</h3>
+                    <p>Create some trips first to manage customer bookings.</p>
+                    <a href="/staff/booking/create-trip" class="create-trip-btn">➕ Create New Trip</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bookings Display Section -->
+        <section class="bookings-section" id="bookingsSection" style="display: none;">
+            <div class="section-header">
+                <h2>👥 Customer Bookings</h2>
+                <p id="selectedTripName">Bookings for selected trip</p>
+            </div>
+
+            <div id="bookingsContainer" class="bookings-container">
+                <!-- Bookings will be loaded here dynamically -->
+            </div>
+
+            <div id="noBookingsMessage" class="no-bookings" style="display: none;">
+                <div class="no-bookings-content">
+                    <div class="empty-icon">📝</div>
+                    <h3>No Bookings Yet</h3>
+                    <p>This trip doesn't have any customer bookings yet.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .brand-subtitle {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .user-role {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn, .logout-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Trip Selection */
+        .trip-selection-section {
+            margin-bottom: 40px;
+        }
+
+        .trips-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .trip-select-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .trip-select-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .trip-select-card.selected {
+            border-color: #48bb78;
+            background: rgba(72, 187, 120, 0.1);
+        }
+
+        .trip-image img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .trip-info h4 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .trip-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .price {
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        .trip-status {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: capitalize;
+        }
+
+        .select-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        .trip-select-card.selected .select-indicator {
+            opacity: 1;
+        }
+
+        /* Bookings Section */
+        .bookings-section {
+            margin-bottom: 40px;
+        }
+
+        .bookings-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .booking-item {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .booking-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .customer-info h5 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .customer-email {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .booking-meta {
+            text-align: right;
+        }
+
+        .booking-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .booking-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .price-value {
+            color: #27ae60;
+            font-size: 1.1rem;
+        }
+
+        /* No Content States */
+        .no-trips, .no-bookings {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        .no-trips-content, .no-bookings-content {
+            text-align: center;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 60px 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .no-trips h3, .no-bookings h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .no-trips p, .no-bookings p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+
+        .create-trip-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .create-trip-btn:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 15px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-section {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .trips-container {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .booking-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        let selectedTripId = null;
+
+        function selectTrip(element) {
+            // Remove selection from all cards
+            document.querySelectorAll('.trip-select-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Select current card
+            element.classList.add('selected');
+            selectedTripId = element.dataset.tripId;
+
+            // Update trip name in bookings section
+            const tripName = element.querySelector('h4').textContent;
+            document.getElementById('selectedTripName').textContent = `Bookings for: ${tripName}`;
+
+            // Show bookings section
+            document.getElementById('bookingsSection').style.display = 'block';
+
+            // Load bookings for selected trip
+            loadTripBookings(selectedTripId);
+        }
+
+        function loadTripBookings(tripId) {
+            const bookingsContainer = document.getElementById('bookingsContainer');
+            const noBookingsMessage = document.getElementById('noBookingsMessage');
+
+            // Show loading
+            bookingsContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: white;"><div style="font-size: 2rem;">⏳</div><p>Loading bookings...</p></div>';
+            noBookingsMessage.style.display = 'none';
+
+            fetch(`/staff/booking/trip-bookings?tripId=${tripId}`)
+                .then(response => response.json())
+                .then(bookings => {
+                    bookingsContainer.innerHTML = '';
+
+                    if (bookings && bookings.length > 0) {
+                        noBookingsMessage.style.display = 'none';
+                        
+                        bookings.forEach(booking => {
+                            const bookingElement = createBookingElement(booking);
+                            bookingsContainer.appendChild(bookingElement);
+                        });
+                    } else {
+                        noBookingsMessage.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading bookings:', error);
+                    bookingsContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #e74c3c;"><div style="font-size: 2rem;">❌</div><p>Error loading bookings</p></div>';
+                });
+        }
+
+        function createBookingElement(booking) {
+            const bookingDiv = document.createElement('div');
+            bookingDiv.className = 'booking-item';
+            
+            const bookingDate = new Date(booking.bookingDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            bookingDiv.innerHTML = `
+                <div class="booking-header">
+                    <div class="customer-info">
+                        <h5>${booking.customerName}</h5>
+                        <div class="customer-email">${booking.customerEmail}</div>
+                    </div>
+                    <div class="booking-meta">
+                        <div class="booking-date">${bookingDate}</div>
+                        <span class="booking-status">${booking.status}</span>
+                    </div>
+                </div>
+                <div class="booking-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Trip:</span>
+                        <span class="detail-value">${booking.tripName}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Total Price:</span>
+                        <span class="detail-value price-value">LKR ${booking.totalPrice}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Booking ID:</span>
+                        <span class="detail-value">#${booking.id}</span>
+                    </div>
+                </div>
+            `;
+
+            return bookingDiv;
+        }
+    </script>
+</body>
+</html>
