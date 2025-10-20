@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Offer - Aqua Trail Boat Safari</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-y: auto; /* Changed from hidden to auto for scrolling */
+        }
+        
+        /* Glossy water effect overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 
+                        0 5px 15px rgba(0, 0, 0, 0.15),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .brand-subtitle {
+            color: #555;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .user-role {
+            font-size: 0.9rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+            border: none;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            margin-bottom: 40px;
+        }
+
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 
+                        0 5px 15px rgba(0, 0, 0, 0.15),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 
+                        0 5px 15px rgba(0, 0, 0, 0.15),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group select {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        .form-group select option {
+            background: rgba(26, 41, 128, 0.92);
+            color: white;
+            padding: 10px;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #1a2980;
+            box-shadow: 0 0 0 3px rgba(26, 41, 128, 0.15), 
+                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+            box-shadow: 0 4px 15px rgba(26, 41, 128, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #152266 0%, #1fb4b0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(26, 41, 128, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.92);
+            color: #2c3e50;
+            border: 1px solid rgba(222, 226, 230, 0.7);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(26, 41, 128, 0.3);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-success {
+            background: rgba(212, 237, 218, 0.92);
+            color: #155724;
+            border: 1px solid rgba(195, 230, 203, 0.5);
+        }
+
+        .alert-error {
+            background: rgba(248, 215, 218, 0.92);
+            color: #721c24;
+            border: 1px solid rgba(245, 198, 203, 0.5);
+        }
+
+        .form-info {
+            background: rgba(227, 242, 253, 0.92);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2196f3;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .form-info h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+
+        .form-info p {
+            margin: 0;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .brand-title {
+                font-size: 1.8rem;
+            }
+
+            .welcome-card {
+                padding: 30px 20px;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="brand-section">
+                    <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+                    <p class="brand-subtitle">Marketing Executive Portal</p>
+                </div>
+                <div class="user-section">
+                    <div class="user-info">
+                        <span class="user-name" th:text="${staff.name}">Marketing Executive</span>
+                        <span class="user-role">Marketing Executive</span>
+                    </div>
+                    <a th:href="@{/staff/logout}" class="logout-btn">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <div class="welcome-card">
+                <div class="welcome-icon">🎁</div>
+                <h2 class="welcome-title">Add New Offer</h2>
+                <p>Create special offers and promotions for customers</p>
+            </div>
+        </section>
+
+        <div id="alertContainer"></div>
+
+        <div class="form-section">
+            <div class="form-info">
+                <h4>📋 Offer Information</h4>
+                <p>Fill in the details below to create a new offer. All fields are required.</p>
+            </div>
+
+            <form id="offerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="offerDate">Offer Date <span class="required">*</span></label>
+                        <input type="date" id="offerDate" name="offerDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="offerType">Offer Type <span class="required">*</span></label>
+                        <select id="offerType" name="offerType" required>
+                            <option value="">Select offer type</option>
+                            <option value="monthly">Monthly Offers</option>
+                            <option value="special">Special Offers</option>
+                            <option value="holiday">Holiday Offers</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startTime">Start Time <span class="required">*</span></label>
+                        <input type="time" id="startTime" name="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">End Time <span class="required">*</span></label>
+                        <input type="time" id="endTime" name="endTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description <span class="required">*</span></label>
+                    <textarea id="description" name="description" required placeholder="Enter offer description and details..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/staff/marketing'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">🎁 Add Offer</button>
+                </div>
+            </form>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/staff/marketing" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('offerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = document.querySelector('.btn-primary');
+            const originalText = submitBtn.textContent;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding Offer...';
+            
+            // Remove any existing alerts
+            const existingAlert = document.getElementById('alertContainer').querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            fetch('/staff/marketing/save-offer', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success';
+                    alert.textContent = '✅ Offer added successfully!';
+                    
+                    document.getElementById('alertContainer').appendChild(alert);
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Scroll to top to show success message
+                    document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Optional: Redirect after 2 seconds
+                    setTimeout(() => {
+                        if (confirm('Offer added successfully! Would you like to return to the dashboard?')) {
+                            window.location.href = '/staff/marketing';
+                        }
+                    }, 2000);
+                } else {
+                    throw new Error(result.replace('error: ', ''));
+                }
+            })
+            .catch(error => {
+                // Show error message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = '❌ Error: ' + error.message;
+                
+                document.getElementById('alertContainer').appendChild(alert);
+                
+                document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+            })
+            .finally(() => {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            });
+        });
+    </script>
+</body>
+</html>

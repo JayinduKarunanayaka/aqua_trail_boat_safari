@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Report - Aqua Trail Boat Safari</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .brand-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .user-role {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            margin-bottom: 40px;
+        }
+
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select {
+            background: white;
+            color: #333;
+        }
+
+        .form-group select option {
+            background: rgba(102, 126, 234, 0.95);
+            color: white;
+            padding: 10px;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(103, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 2px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .report-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .report-info h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+
+        .report-info p {
+            margin: 0;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .report-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .brand-title {
+                font-size: 1.8rem;
+            }
+
+            .welcome-card {
+                padding: 30px 20px;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="brand-section">
+                    <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+                    <p class="brand-subtitle">Marketing Executive Portal</p>
+                </div>
+                <div class="user-section">
+                    <div class="user-info">
+                        <span class="user-name" th:text="${staff.name}">Marketing Executive</span>
+                        <span class="user-role">Marketing Executive</span>
+                    </div>
+                    <a th:href="@{/staff/logout}" class="logout-btn">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <div class="welcome-card">
+                <div class="welcome-icon">✏️</div>
+                <h2 class="welcome-title">Edit Report</h2>
+                <p>Update the details of your report</p>
+            </div>
+        </section>
+
+        <div id="alertContainer"></div>
+
+        <div class="form-section">
+            <div class="report-info">
+                <h4>📋 Report Information</h4>
+                <p>Update the details of your report below. All fields are required.</p>
+                <div class="report-meta">
+                    <span th:text="|Report ID: #${report.id}|">Report ID: #123</span>
+                    <span th:text="|Created by: ${report.createdBy}|">Created by: John Doe</span>
+                    <span th:text="|Created: ${#temporals.format(report.createdDate, 'dd MMM yyyy HH:mm')}|">Created: 01 Jan 2023 12:00</span>
+                </div>
+            </div>
+
+            <form id="editReportForm">
+                <input type="hidden" id="reportId" name="reportId" th:value="${report.id}">
+                
+                <div class="form-group">
+                    <label for="title">Report Title <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" required placeholder="Enter report title" th:value="${report.title}">
+                </div>
+
+                <div class="form-group">
+                    <label for="reportType">Report Type <span class="required">*</span></label>
+                    <select id="reportType" name="reportType" required>
+                        <option value="">Select a report type</option>
+                        <option value="analytics" th:selected="${report.reportType == 'analytics'}">Analytics</option>
+                        <option value="custom" th:selected="${report.reportType == 'custom'}">Custom</option>
+                        <option value="monthly" th:selected="${report.reportType == 'monthly'}">Monthly</option>
+                        <option value="quarterly" th:selected="${report.reportType == 'quarterly'}">Quarterly</option>
+                        <option value="annual" th:selected="${report.reportType == 'annual'}">Annual</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Report Content <span class="required">*</span></label>
+                    <textarea id="content" name="content" required placeholder="Enter report content" th:text="${report.content}"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/staff/marketing/reports-details'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/staff/marketing" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('editReportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = document.querySelector('.btn-primary');
+            const originalText = submitBtn.textContent;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving Changes...';
+            
+            // Remove any existing alerts
+            const existingAlert = document.getElementById('alertContainer').querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            fetch('/staff/marketing/update-report', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success';
+                    alert.textContent = '✅ Report updated successfully!';
+                    
+                    document.getElementById('alertContainer').appendChild(alert);
+                    
+                    // Scroll to top to show success message
+                    document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Optional: Redirect after 2 seconds
+                    setTimeout(() => {
+                        if (confirm('Report updated successfully! Would you like to return to the reports list?')) {
+                            window.location.href = '/staff/marketing/reports-details';
+                        }
+                    }, 2000);
+                } else {
+                    throw new Error(result.replace('error: ', ''));
+                }
+            })
+            .catch(error => {
+                // Show error message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = '❌ Error: ' + error.message;
+                
+                document.getElementById('alertContainer').appendChild(alert);
+                
+                document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+            })
+            .finally(() => {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            });
+        });
+    </script>
+</body>
+</html>
