@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Trips - Aqua Trail Boat Safari</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-y: auto; /* Changed from hidden to auto for scrolling */
+        }
+        
+        /* Glossy water effect overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 
+                        0 5px 15px rgba(0, 0, 0, 0.15),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1a2980;
+        }
+        
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+            border: none;
+        }
+        
+        .back-link:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .trips-grid {
+            display: grid;
+            gap: 25px;
+        }
+        
+        .trip-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .trip-card:hover {
+            border-color: #1a2980;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
+        .trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .trip-id {
+            background: rgba(227, 242, 253, 0.92);
+            color: #1a2980;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .trip-status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .status-active { 
+            background: rgba(232, 245, 233, 0.92); 
+            color: #2e7d32; 
+        }
+        
+        .status-inactive { 
+            background: rgba(255, 235, 238, 0.92); 
+            color: #c62828; 
+        }
+        
+        .trip-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e8ed;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #1a2980;
+            box-shadow: 0 0 0 3px rgba(26, 41, 128, 0.15), 
+                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        
+        .assignment-section {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            grid-column: 1 / -1;
+            margin: 10px 0;
+            border-left: 3px solid #1a2980;
+        }
+        
+        .assignment-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .assignment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            grid-column: 1 / -1;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(26, 41, 128, 0.3);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #152266 0%, #1fb4b0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(26, 41, 128, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(243, 156, 18, 0.4);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-success {
+            background: rgba(212, 237, 218, 0.92);
+            color: #155724;
+            border: 1px solid rgba(195, 230, 203, 0.5);
+        }
+        
+        .alert-error {
+            background: rgba(248, 215, 218, 0.92);
+            color: #721c24;
+            border: 1px solid rgba(245, 198, 203, 0.5);
+        }
+        
+        .no-trips {
+            text-align: center;
+            padding: 60px;
+            color: #555;
+        }
+        
+        .trip-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .edit-btn, .delete-btn, .save-btn, .cancel-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn {
+            background: rgba(248, 249, 250, 0.9);
+            color: #555;
+            border: 1px solid rgba(222, 226, 230, 0.5);
+        }
+        
+        .edit-btn:hover {
+            background: rgba(233, 236, 239, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        .delete-btn {
+            background: rgba(255, 245, 245, 0.9);
+            color: #c53030;
+            border: 1px solid rgba(254, 215, 215, 0.5);
+        }
+        
+        .delete-btn:hover {
+            background: rgba(254, 215, 215, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(26, 41, 128, 0.3);
+        }
+        
+        .save-btn:hover {
+            background: linear-gradient(135deg, #152266 0%, #1fb4b0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(26, 41, 128, 0.4);
+        }
+        
+        .cancel-btn {
+            background: rgba(248, 249, 250, 0.9);
+            color: #555;
+            border: 1px solid rgba(222, 226, 230, 0.5);
+        }
+        
+        .cancel-btn:hover {
+            background: rgba(233, 236, 239, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            .trip-form {
+                grid-template-columns: 1fr;
+            }
+            .assignment-grid {
+                grid-template-columns: 1fr;
+            }
+            .trip-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+            <h2>Manage Trips</h2>
+            <p>Update or delete existing trips in the system</p>
+        </div>
+        
+        <a href="/staff/booking" class="back-link">← Back to Booking Dashboard</a>
+        
+        <div id="alertContainer"></div>
+        
+        <div class="stats-card">
+            <div class="stats-number" th:text="${tripsCount}">0</div>
+            <div>Total Trips</div>
+        </div>
+        
+        <div th:if="${trips.empty}" class="no-trips">
+            <h3>📭 No Trips Found</h3>
+            <p>There are currently no trips in the system.</p>
+        </div>
+        
+        <div class="trips-grid" th:unless="${trips.empty}">
+            <div class="trip-card" th:each="trip : ${trips}">
+                <div class="trip-header">
+                    <div class="trip-id">Trip ID: <span th:text="${trip.id}">1</span></div>
+                    <div class="trip-status" th:class="${trip.status == 'active' ? 'status-active' : 'status-inactive'}" th:text="${trip.status}">Active</div>
+                </div>
+                
+                <form class="trip-form" th:id="'tripForm-' + ${trip.id}">
+                    <input type="hidden" name="tripId" th:value="${trip.id}">
+                    
+                    <div class="form-group">
+                        <label for="tripName">Trip Name:</label>
+                        <input type="text" name="tripName" th:value="${trip.tripName}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration">Duration:</label>
+                        <input type="text" name="duration" th:value="${trip.duration}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="price">Price (LKR):</label>
+                        <input type="number" name="price" th:value="${trip.price}" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="imageUrl">Image URL:</label>
+                        <input type="text" name="imageUrl" th:value="${trip.imageUrl}">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="description">Description:</label>
+                        <textarea name="description" rows="3" th:text="${trip.description}"></textarea>
+                    </div>
+                    
+                    <div class="assignment-section">
+                        <div class="assignment-title">Assignments</div>
+                        <div class="assignment-grid">
+                            <div class="form-group">
+                                <label for="captainName">Captain:</label>
+                                <select name="captainName">
+                                    <option value="">No Captain Assigned</option>
+                                    <option value="none">Unassign Captain</option>
+                                    <option th:each="captain : ${captains}" 
+                                            th:value="${captain.name}" 
+                                            th:text="${captain.name}"
+                                            th:selected="${trip.captainName != null and trip.captainName == captain.name}"></option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="boatName">Boat:</label>
+                                <select name="boatName">
+                                    <option value="">No Boat Assigned</option>
+                                    <option value="none">Unassign Boat</option>
+                                    <option value="Safari Explorer">Safari Explorer</option>
+                                    <option value="Ocean Navigator">Ocean Navigator</option>
+                                    <option value="River Runner">River Runner</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <select name="status">
+                            <option value="active" th:selected="${trip.status == 'active'}">Active</option>
+                            <option value="inactive" th:selected="${trip.status == 'inactive'}">Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="trip-actions">
+                        <button type="button" class="edit-btn" th:onclick="'editTrip(' + ${trip.id} + ')'">✏️ Edit</button>
+                        <button type="button" class="delete-btn" th:onclick="'deleteTrip(' + ${trip.id} + ')'">🗑️ Delete</button>
+                        <button type="button" class="save-btn" th:onclick="'saveTrip(' + ${trip.id} + ')'" style="display: none;">💾 Save</button>
+                        <button type="button" class="cancel-btn" th:onclick="'cancelEdit(' + ${trip.id} + ')'" style="display: none;">❌ Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to enable editing for a trip
+        function editTrip(tripId) {
+            const form = document.getElementById('tripForm-' + tripId);
+            const editBtn = form.querySelector('.edit-btn');
+            const deleteBtn = form.querySelector('.delete-btn');
+            const saveBtn = form.querySelector('.save-btn');
+            const cancelBtn = form.querySelector('.cancel-btn');
+            
+            // Enable all form fields
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                if (input.name !== 'tripId') {
+                    input.disabled = false;
+                }
+            });
+            
+            // Show save/cancel buttons, hide edit/delete
+            editBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+        }
+        
+        // Function to cancel editing
+        function cancelEdit(tripId) {
+            const form = document.getElementById('tripForm-' + tripId);
+            const editBtn = form.querySelector('.edit-btn');
+            const deleteBtn = form.querySelector('.delete-btn');
+            const saveBtn = form.querySelector('.save-btn');
+            const cancelBtn = form.querySelector('.cancel-btn');
+            
+            // Disable all form fields
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                if (input.name !== 'tripId') {
+                    input.disabled = true;
+                }
+            });
+            
+            // Hide save/cancel buttons, show edit/delete
+            editBtn.style.display = 'inline-block';
+            deleteBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            
+            // Reset form to original values (this would require storing original values)
+            form.reset();
+        }
+        
+        // Function to save trip changes
+        function saveTrip(tripId) {
+            const form = document.getElementById('tripForm-' + tripId);
+            const formData = new FormData(form);
+            
+            // Show loading state
+            const saveBtn = form.querySelector('.save-btn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+            
+            fetch('/staff/booking/update-trip', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    // Show success message
+                    showAlert('✅ Trip updated successfully!', 'success');
+                    
+                    // Update UI to show trip is saved
+                    const editBtn = form.querySelector('.edit-btn');
+                    const deleteBtn = form.querySelector('.delete-btn');
+                    const saveBtn = form.querySelector('.save-btn');
+                    const cancelBtn = form.querySelector('.cancel-btn');
+                    
+                    // Disable all form fields
+                    const inputs = form.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        if (input.name !== 'tripId') {
+                            input.disabled = true;
+                        }
+                    });
+                    
+                    // Hide save/cancel buttons, show edit/delete
+                    editBtn.style.display = 'inline-block';
+                    deleteBtn.style.display = 'inline-block';
+                    saveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                } else {
+                    throw new Error(result.replace('error: ', ''));
+                }
+            })
+            .catch(error => {
+                showAlert('❌ Error: ' + error.message, 'error');
+            })
+            .finally(() => {
+                // Reset button
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            });
+        }
+        
+        // Function to delete a trip
+        function deleteTrip(tripId) {
+            if (confirm('Are you sure you want to delete this trip? This action cannot be undone.')) {
+                const formData = new FormData();
+                formData.append('tripId', tripId);
+                
+                fetch('/staff/booking/delete-trip', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'success') {
+                        // Show success message
+                        showAlert('✅ Trip deleted successfully!', 'success');
+                        
+                        // Remove the trip card from the DOM
+                        const tripCard = document.querySelector('.trip-card').closest('[id*="tripForm-' + tripId + '"]').parentElement;
+                        if (tripCard) {
+                            tripCard.remove();
+                            
+                            // Update trip count
+                            const countElement = document.querySelector('.stats-number');
+                            if (countElement) {
+                                const currentCount = parseInt(countElement.textContent);
+                                countElement.textContent = currentCount - 1;
+                            }
+                        }
+                    } else {
+                        throw new Error(result.replace('error: ', ''));
+                    }
+                })
+                .catch(error => {
+                    showAlert('❌ Error: ' + error.message, 'error');
+                });
+            }
+        }
+        
+        // Function to show alert messages
+        function showAlert(message, type) {
+            // Remove any existing alerts
+            const existingAlert = document.getElementById('alertContainer').querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            // Create new alert
+            const alert = document.createElement('div');
+            alert.className = type === 'success' ? 'alert alert-success' : 'alert alert-error';
+            alert.textContent = message;
+            
+            document.getElementById('alertContainer').appendChild(alert);
+            
+            // Scroll to top to show alert
+            document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
+            
+            // Auto-remove alert after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+        
+        // Initialize form fields as disabled
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('.trip-form');
+            forms.forEach(form => {
+                const inputs = form.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                    if (input.name !== 'tripId') {
+                        input.disabled = true;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
