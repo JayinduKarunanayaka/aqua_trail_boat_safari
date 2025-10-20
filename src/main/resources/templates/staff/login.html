@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aqua Trail Boat Safari - Staff Login</title>
+    <link rel="stylesheet" th:href="@{/staff/style.css}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow-y: auto; /* Changed from hidden to auto for scrolling */
+        }
+        
+        /* Glossy water effect overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.92);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 
+                        0 5px 15px rgba(0, 0, 0, 0.15),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            margin: 20px;
+        }
+        
+        .brand-header {
+            margin-bottom: 25px;
+        }
+        
+        .brand-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+        
+        .brand-subtitle {
+            color: #555;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        
+        .login-header {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #1a2980;
+            box-shadow: 0 0 0 3px rgba(26, 41, 128, 0.15), 
+                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(26, 41, 128, 0.3);
+        }
+        
+        .login-btn:hover {
+            background: linear-gradient(135deg, #152266 0%, #1fb4b0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(26, 41, 128, 0.4);
+        }
+        
+        .login-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(26, 41, 128, 0.3);
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(255, 65, 108, 0.3);
+        }
+        
+        .roles-info {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(26, 41, 128, 0.08);
+            border-radius: 10px;
+            border-left: 3px solid #1a2980;
+            backdrop-filter: blur(5px);
+            text-align: left;
+        }
+        
+        .roles-info h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .roles-info ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+        
+        .roles-info li {
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        
+        .roles-info li strong {
+            color: #1a2980;
+            font-weight: 600;
+        }
+        
+        .debug-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .debug-link a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+        
+        .debug-link a:hover {
+            color: #1a2980;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 15px;
+                padding: 25px 20px;
+            }
+            
+            .brand-title {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="brand-header">
+            <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+            <p class="brand-subtitle">Staff Portal</p>
+        </div>
+        <h2 class="login-header">Staff Login</h2>
+        
+        <div th:if="${loginError}" class="error-message">
+            Invalid email or password. Please try again.
+        </div>
+
+        <form method="post" th:action="@{/staff/login}">
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+
+        <div class="roles-info">
+            <h3>Staff Roles & Dashboards:</h3>
+            <ul>
+                <li><strong>Admin</strong> - Administrative Dashboard</li>
+                <li><strong>Manager</strong> - Operational Management</li>
+                <li><strong>Booking</strong> - Booking Management</li>
+                <li><strong>Marketing</strong> - Marketing Dashboard</li>
+                <li><strong>Captain</strong> - Captain Dashboard</li>
+            </ul>
+        </div>
+
+        <div class="debug-link">
+            <small><a href="/staff/debug">🔧 Database Debug</a></small>
+        </div>
+    </div>
+</body>
+</html>

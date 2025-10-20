@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Feedbacks Management - Aqua Trail Boat Safari</title>
+    <link rel="stylesheet" th:href="@{/staff/style.css}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="brand-section">
+                    <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+                    <p class="brand-subtitle">Customer Feedbacks Management</p>
+                </div>
+                <div class="user-section">
+                    <div class="user-info">
+                        <span class="user-name" th:text="${staff.name}">Manager</span>
+                        <span class="user-role">Operational Manager</span>
+                    </div>
+                    <a th:href="@{/staff/manager}" class="back-btn">🏠 Dashboard</a>
+                    <a th:href="@{/staff/logout}" class="logout-btn">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Feedbacks Section -->
+        <section class="feedbacks-section">
+            <div class="section-header">
+                <h2>💬 Customer Feedbacks</h2>
+                <p>Review and respond to customer feedback about your boat safari services</p>
+            </div>
+
+            <div th:if="${feedbacks != null and !feedbacks.empty}" class="feedbacks-container">
+                <div th:each="feedback : ${feedbacks}" class="feedback-card">
+                    <div class="feedback-header">
+                        <div class="customer-info">
+                            <h4 th:text="${feedback.customerName}" class="customer-name">Customer Name</h4>
+                            <span th:text="${feedback.customerEmail}" class="customer-email">customer@email.com</span>
+                        </div>
+                        <div class="feedback-meta">
+                            <div class="feedback-rating">
+                                <span th:each="i : ${#numbers.sequence(1, feedback.rating)}" class="star filled">★</span>
+                                <span th:each="i : ${#numbers.sequence(feedback.rating + 1, 5)}" class="star empty">☆</span>
+                                <span th:text="|${feedback.rating}/5|" class="rating-text"></span>
+                            </div>
+                            <div class="feedback-date" th:text="${#temporals.format(feedback.feedbackDate, 'dd MMM yyyy HH:mm')}">Date</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feedback-content">
+                        <p th:text="${feedback.feedbackText}">Feedback content</p>
+                    </div>
+                    
+                    <div class="feedback-actions">
+                        <button class="reply-btn" 
+                                th:data-feedback-id="${feedback.id}" 
+                                th:data-customer-name="${feedback.customerName}"
+                                onclick="openReplyModal(this.dataset.feedbackId, this.dataset.customerName)">
+                            📧 Reply to Customer
+                        </button>
+                        <span th:text="|Status: ${feedback.status}|" class="feedback-status"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${feedbacks == null or feedbacks.empty}" class="no-feedbacks">
+                <div class="no-feedbacks-content">
+                    <div class="empty-icon">💭</div>
+                    <h3>No Customer Feedbacks Yet</h3>
+                    <p>Customer feedback will appear here once they start sharing their experiences with your boat tours.</p>
+                    <a href="/feedback" class="view-customer-page-btn">📄 View Customer Feedback Page</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Reply Modal -->
+    <div id="replyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📧 Reply to Customer Feedback</h3>
+                <span class="close-btn" onclick="closeReplyModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="customer-info-modal">
+                    <strong>Replying to:</strong> <span id="modalCustomerName">Customer Name</span>
+                </div>
+                <form id="replyForm">
+                    <input type="hidden" id="feedbackId" value="">
+                    <div class="form-group">
+                        <label for="replyMessage">Your Reply:</label>
+                        <textarea id="replyMessage" required placeholder="Type your reply to the customer..." rows="6"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="send-reply-btn">📤 Send Reply</button>
+                        <button type="button" class="cancel-btn" onclick="closeReplyModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .brand-subtitle {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .user-role {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn, .logout-btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Feedbacks Section */
+        .feedbacks-section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .feedbacks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .feedback-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .feedback-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .customer-name {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .customer-email {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .feedback-meta {
+            text-align: right;
+        }
+
+        .feedback-rating {
+            margin-bottom: 8px;
+        }
+
+        .star.filled {
+            color: #ffc107;
+        }
+
+        .star.empty {
+            color: #ddd;
+        }
+
+        .rating-text {
+            margin-left: 8px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .feedback-date {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .feedback-content p {
+            color: #4a5568;
+            line-height: 1.6;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .feedback-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reply-btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reply-btn:hover {
+            background: linear-gradient(135deg, #26d0ce 0%, #1a2980 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .feedback-status {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        /* No Feedbacks State */
+        .no-feedbacks {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .no-feedbacks-content {
+            text-align: center;
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 60px 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .no-feedbacks h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .no-feedbacks p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+
+        .view-customer-page-btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .view-customer-page-btn:hover {
+            background: linear-gradient(135deg, #26d0ce 0%, #1a2980 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.9);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 30px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .modal-header h3 {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin: 0;
+        }
+
+        .close-btn {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #e74c3c;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .customer-info-modal {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1a2980;
+            box-shadow: 0 0 0 3px rgba(26, 41, 128, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .send-reply-btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-reply-btn:hover {
+            background: linear-gradient(135deg, #26d0ce 0%, #1a2980 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cancel-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 15px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-section {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .feedback-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .feedback-actions {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <script>
+        function openReplyModal(feedbackId, customerName) {
+            document.getElementById('feedbackId').value = feedbackId;
+            document.getElementById('modalCustomerName').textContent = customerName;
+            document.getElementById('replyMessage').value = '';
+            document.getElementById('replyModal').style.display = 'block';
+        }
+
+        function closeReplyModal() {
+            document.getElementById('replyModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('replyModal');
+            if (event.target === modal) {
+                closeReplyModal();
+            }
+        }
+
+        // Handle reply form submission
+        document.getElementById('replyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const feedbackId = document.getElementById('feedbackId').value;
+            const replyMessage = document.getElementById('replyMessage').value.trim();
+            
+            if (!replyMessage) {
+                alert('Please enter a reply message.');
+                return;
+            }
+            
+            const sendBtn = document.querySelector('.send-reply-btn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
+            const formData = new FormData();
+            formData.append('feedbackId', feedbackId);
+            formData.append('replyMessage', replyMessage);
+            
+            fetch('/staff/manager/reply-feedback', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    alert('Reply sent successfully! The customer will receive your response via email.');
+                    closeReplyModal();
+                } else {
+                    alert('Failed to send reply: ' + result);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to send reply. Please try again.');
+            })
+            .finally(() => {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📤 Send Reply';
+            });
+        });
+    </script>
+</body>
+</html>

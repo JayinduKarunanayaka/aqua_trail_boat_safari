@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ongoing Trips - Aqua Trail Boat Safari</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-y: auto;
+        }
+        
+        /* Glossy water effect overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 
+                        0 5px 15px rgba(0, 0, 0, 0.15),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1a2980;
+        }
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .page-title {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        .welcome-text {
+            color: #555;
+            font-size: 1.1rem;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+        }
+        .back-link:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        .stats-section {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .stats-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .stats-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .trips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .trip-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .trip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2),
+                        0 0 0 2px rgba(26, 41, 128, 0.3);
+        }
+        .trip-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            background-size: cover;
+            background-position: center;
+        }
+        .trip-content {
+            padding: 25px;
+        }
+        .trip-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .trip-duration {
+            color: #1a2980;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .trip-price {
+            font-size: 1.3rem;
+            color: #26d0ce;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .trip-description {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .trip-assignment {
+            background: rgba(227, 242, 253, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #1a2980;
+        }
+        .assignment-label {
+            font-weight: 600;
+            color: #1a2980;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .assignment-info {
+            color: #333;
+            margin-top: 5px;
+        }
+        .trip-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-active {
+            background: rgba(232, 245, 232, 0.8);
+            color: #2e7d32;
+        }
+        .status-started {
+            background: rgba(255, 243, 224, 0.8);
+            color: #ef6c00;
+        }
+        .status-ended {
+            background: rgba(255, 235, 238, 0.8);
+            color: #c62828;
+        }
+        .no-trips {
+            text-align: center;
+            padding: 60px 20px;
+            color: #555;
+        }
+        .no-trips-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .no-trips h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .no-trips p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        .error-message {
+            background: rgba(248, 215, 218, 0.92);
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(245, 198, 203, 0.5);
+        }
+        
+        /* Trip Action Buttons */
+        .trip-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            box-shadow: 0 4px 15px rgba(26, 41, 128, 0.3);
+        }
+        
+        .btn-start:hover {
+            background: linear-gradient(135deg, #152266 0%, #1fb4b0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(26, 41, 128, 0.4);
+        }
+        
+        .btn-end {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+        }
+        
+        .btn-end:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+        }
+        
+        .btn-disabled {
+            background: rgba(204, 204, 204, 0.9);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            .brand-title {
+                font-size: 1.8rem;
+            }
+            .page-title {
+                font-size: 1.5rem;
+            }
+            .trips-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .stats-number {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/staff/manager" class="back-link">← Back to Dashboard</a>
+        
+        <div class="header">
+            <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+            <h2 class="page-title">🌊 Ongoing Trips</h2>
+            <p class="welcome-text">Operational Manager: <strong th:text="${staff.name}">Manager Name</strong></p>
+        </div>
+
+        <!-- Error Message if any -->
+        <div th:if="${error}" class="error-message" th:text="${error}">
+            Error message will appear here
+        </div>
+
+        <!-- Trip Statistics -->
+        <div class="stats-section">
+            <div class="stats-number" th:text="${tripsCount ?: 0}">0</div>
+            <div class="stats-label">🌊 Currently Ongoing Trips</div>
+        </div>
+
+        <!-- Trips Display -->
+        <div th:if="${tripsCount == 0}" class="no-trips">
+            <div class="no-trips-icon">⚓</div>
+            <h3>No Ongoing Trips</h3>
+            <p>There are currently no trips in progress.<br>
+               Trips will appear here once captains mark them as started.</p>
+        </div>
+
+        <div th:if="${tripsCount > 0}" class="trips-grid">
+            <div th:each="trip : ${ongoingTrips}" class="trip-card">
+                <div class="trip-image" th:style="'background-image: url(' + ${trip.imageUrl ?: 'none'} + ');'">
+                    <span th:if="${trip.imageUrl == null or trip.imageUrl == ''}">🌊 Trip Image</span>
+                </div>
+                <div class="trip-content">
+                    <h3 class="trip-title" th:text="${trip.tripName}">Trip Name</h3>
+                    <div class="trip-duration">⏱️ Duration: <span th:text="${trip.duration}">2 hours</span></div>
+                    <div class="trip-price">💰 LKR <span th:text="${#numbers.formatDecimal(trip.price, 0, 'COMMA', 2, 'POINT')}">5,000.00</span></div>
+                    
+                    <div class="trip-description" th:text="${trip.description}">
+                        Trip description goes here...
+                    </div>
+                    
+                    <div class="trip-assignment">
+                        <div class="assignment-label">🚢 Captain Assignment</div>
+                        <div class="assignment-info">
+                            <strong>Captain:</strong> 
+                            <span th:text="${trip.captainName ?: 'Not assigned'}">Captain Name</span>
+                        </div>
+                        <div class="assignment-info">
+                            <strong>Boat:</strong> 
+                            <span th:if="${trip.boatName != null and trip.boatName != ''}" th:text="${trip.boatName}">Boat Name</span>
+                            <span th:if="${trip.boatName == null or trip.boatName == ''}">Not assigned</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <span class="trip-status status-started" th:text="${trip.status}">Started</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${tripsCount > 0}" style="text-align: center; margin-top: 30px; color: #555;">
+            <p>📋 <strong th:text="${tripsCount}">3</strong> trip(s) currently in progress</p>
+            <p style="margin-top: 10px;">Monitor these trips to ensure smooth operations.</p>
+        </div>
+    </div>
+</body>
+</html>

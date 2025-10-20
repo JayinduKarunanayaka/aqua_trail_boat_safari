@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Issues - Aqua Trail Boat Safari</title>
+    <link rel="stylesheet" th:href="@{/staff/style.css}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="brand-section">
+                    <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+                    <p class="brand-subtitle">Operational Management Portal - Issues</p>
+                </div>
+                <div class="user-section">
+                    <div class="user-info">
+                        <span class="user-name" th:text="${staff.name}">Manager</span>
+                        <span class="user-role">Operational Manager</span>
+                    </div>
+                    <a th:href="@{/staff/manager}" class="back-btn">← Back to Dashboard</a>
+                    <a th:href="@{/staff/logout}" class="logout-btn">🚪 Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Issues Section -->
+        <section class="content-section">
+            <div class="content-header">
+                <div class="header-icon">⚠️</div>
+                <h2 class="content-title">Captain Issues</h2>
+                <p class="content-subtitle">Review and manage issues reported by boat captains</p>
+            </div>
+
+            <!-- Issues Stats -->
+            <div class="stats-grid">
+                <div class="stat-card open-issues">
+                    <div class="stat-icon">🔴</div>
+                    <div class="stat-info">
+                        <h3 class="stat-number" th:text="${openIssuesCount}">0</h3>
+                        <p class="stat-label">Open Issues</p>
+                    </div>
+                </div>
+                <div class="stat-card in-progress-issues">
+                    <div class="stat-icon">🟡</div>
+                    <div class="stat-info">
+                        <h3 class="stat-number" th:text="${inProgressIssuesCount}">0</h3>
+                        <p class="stat-label">In Progress</p>
+                    </div>
+                </div>
+                <div class="stat-card resolved-issues">
+                    <div class="stat-icon">🟢</div>
+                    <div class="stat-info">
+                        <h3 class="stat-number" th:text="${resolvedIssuesCount}">0</h3>
+                        <p class="stat-label">Resolved</p>
+                    </div>
+                </div>
+                <div class="stat-card total-issues">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <h3 class="stat-number" th:text="${totalIssuesCount}">0</h3>
+                        <p class="stat-label">Total Issues</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Issues List -->
+            <div class="issues-container">
+                <div th:if="${totalIssuesCount == 0}" class="no-issues">
+                    <div class="no-issues-icon">✅</div>
+                    <h3>No Issues Reported</h3>
+                    <p>Great news! No captains have reported any issues recently.</p>
+                </div>
+
+                <div th:if="${totalIssuesCount > 0}" class="issues-list">
+                    <div th:each="issue : ${issues}" class="issue-card" th:classappend="${issue.priority}">
+                        <div class="issue-header">
+                            <div class="issue-meta">
+                                <span class="issue-priority" th:text="${#strings.toUpperCase(issue.priority)}" 
+                                      th:classappend="${issue.priority}">HIGH</span>
+                                <span class="issue-status" th:text="${#strings.toUpperCase(issue.status)}" 
+                                      th:classappend="${issue.status}">OPEN</span>
+                            </div>
+                            <div class="issue-date">
+                                <span th:if="${issue.createdDate != null}" th:text="${#temporals.format(issue.createdDate, 'MMM dd, yyyy HH:mm')}">Dec 15, 2024 14:30</span>
+                                <span th:if="${issue.createdDate == null}">Date not available</span>
+                            </div>
+                        </div>
+
+                        <div class="issue-content">
+                            <h4 class="issue-title" th:text="${issue.title}">Issue Title</h4>
+                            <p class="issue-reporter">
+                                Reported by: <strong th:text="${issue.reportedBy}">Captain Name</strong>
+                                <span class="reporter-email" th:text="'(' + ${issue.captainEmail} + ')'"></span>
+                            </p>
+                            <div class="issue-description" th:text="${issue.description}">
+                                Issue description goes here...
+                            </div>
+                        </div>
+
+                        <div class="issue-actions">
+                            <select class="status-select" onchange="updateIssueStatus(this)" 
+                                    th:data-issue-id="${issue.id}">
+                                <option value="open" th:selected="${issue.status == 'open'}">Open</option>
+                                <option value="in_progress" th:selected="${issue.status == 'in_progress'}">In Progress</option>
+                                <option value="resolved" th:selected="${issue.status == 'resolved'}">Resolved</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-y: auto;
+        }
+        
+        /* Glossy water effect overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .brand-subtitle {
+            color: #555;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .user-role {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .back-btn, .logout-btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Content Section */
+        .content-section {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .content-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .content-subtitle {
+            color: #555;
+            font-size: 1.2rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* Issues Container */
+        .issues-container {
+            margin-top: 30px;
+        }
+
+        .no-issues {
+            text-align: center;
+            padding: 60px 20px;
+            color: #555;
+        }
+
+        .no-issues-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .no-issues h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .issues-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .issue-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid rgba(225, 232, 237, 0.8);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .issue-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .issue-card.urgent {
+            border-left-color: #dc3545;
+        }
+
+        .issue-card.high {
+            border-left-color: #fd7e14;
+        }
+
+        .issue-card.medium {
+            border-left-color: #ffc107;
+        }
+
+        .issue-card.low {
+            border-left-color: #28a745;
+        }
+
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .issue-meta {
+            display: flex;
+            gap: 10px;
+        }
+
+        .issue-priority,
+        .issue-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .issue-priority.urgent {
+            background: #dc3545;
+            color: white;
+        }
+
+        .issue-priority.high {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .issue-priority.medium {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .issue-priority.low {
+            background: #28a745;
+            color: white;
+        }
+
+        .issue-status.open {
+            background: rgba(227, 242, 253, 0.8);
+            color: #1976d2;
+        }
+
+        .issue-status.in_progress {
+            background: rgba(255, 243, 224, 0.8);
+            color: #f57c00;
+        }
+
+        .issue-status.resolved {
+            background: rgba(232, 245, 232, 0.8);
+            color: #2e7d32;
+        }
+
+        .issue-date {
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .issue-content {
+            margin-bottom: 20px;
+        }
+
+        .issue-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .issue-reporter {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .reporter-email {
+            font-style: italic;
+        }
+
+        .issue-description {
+            color: #333;
+            line-height: 1.6;
+            background: rgba(248, 249, 250, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #1a2980;
+        }
+
+        .issue-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .status-select {
+            padding: 8px 15px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            color: #2c3e50;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: #1a2980;
+            box-shadow: 0 0 0 3px rgba(26, 41, 128, 0.1), 
+                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-success {
+            background: rgba(212, 237, 218, 0.92);
+            color: #155724;
+            border: 1px solid rgba(195, 230, 203, 0.5);
+        }
+
+        .alert-error {
+            background: rgba(248, 215, 218, 0.92);
+            color: #721c24;
+            border: 1px solid rgba(245, 198, 203, 0.5);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 15px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .user-section {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .brand-title {
+                font-size: 1.8rem;
+            }
+
+            .content-section {
+                padding: 30px 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .stat-card {
+                padding: 20px 15px;
+            }
+
+            .issue-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .issue-actions {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+
+    <script>
+        function updateIssueStatus(selectElement) {
+            const issueId = selectElement.getAttribute('data-issue-id');
+            const newStatus = selectElement.value;
+            const originalValue = selectElement.getAttribute('data-original-value') || selectElement.value;
+            
+            // Store original value for rollback if needed
+            if (!selectElement.hasAttribute('data-original-value')) {
+                selectElement.setAttribute('data-original-value', originalValue);
+            }
+            
+            // Disable select while updating
+            selectElement.disabled = true;
+            
+            // Remove any existing alerts
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            const formData = new FormData();
+            formData.append('issueId', issueId);
+            formData.append('newStatus', newStatus);
+            
+            fetch('/staff/manager/update-issue-status', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'success') {
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success';
+                    alert.textContent = '✅ Issue status updated successfully!';
+                    
+                    const contentSection = document.querySelector('.content-section');
+                    contentSection.insertBefore(alert, contentSection.firstChild);
+                    
+                    // Update the original value
+                    selectElement.setAttribute('data-original-value', newStatus);
+                    
+                    // Scroll to top to show success message
+                    contentSection.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Auto-hide success message after 3 seconds
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 3000);
+                } else {
+                    throw new Error(result);
+                }
+            })
+            .catch(error => {
+                // Show error message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-error';
+                alert.textContent = '❌ Error updating status: ' + error.message;
+                
+                const contentSection = document.querySelector('.content-section');
+                contentSection.insertBefore(alert, contentSection.firstChild);
+                
+                // Rollback to original value
+                selectElement.value = originalValue;
+                
+                contentSection.scrollIntoView({ behavior: 'smooth' });
+            })
+            .finally(() => {
+                // Re-enable select
+                selectElement.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
