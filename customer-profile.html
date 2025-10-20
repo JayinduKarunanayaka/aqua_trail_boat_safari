@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Aqua Trail</title>
+    <link rel="stylesheet" th:href="@{/user/style.css}">
+    <style>
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .my-bookings-btn, .register-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .my-bookings-btn:hover, .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(103, 126, 234, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .register-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-profile-link {
+            color: #2c3e50;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .user-profile-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .header-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚤 Aqua Trail Boat Safari</h1>
+            <div class="header-nav">
+                <a href="/logout" class="my-bookings-btn">Logout</a>
+                <a href="/offers" class="my-bookings-btn">🎁 Offers</a>
+                <a href="/feedback" class="my-bookings-btn">💬 Feedback</a>
+                <a href="/bookings" class="my-bookings-btn">📝 My Bookings</a>
+            </div>
+        </div>
+
+        <div class="profile-container">
+            <h2>My Profile</h2>
+            
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <span th:text="${customer.name.charAt(0)}">U</span>
+                    </div>
+                    <h3 th:text="${customer.name}">User Name</h3>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="profile-item">
+                        <label>Email:</label>
+                        <span th:text="${customer.email}">user@example.com</span>
+                    </div>
+                    
+                    <div class="profile-item">
+                        <label>Phone Number:</label>
+                        <span th:text="${customer.phoneNumber ?: 'Not provided'}">Not provided</span>
+                    </div>
+                    
+                    <div class="profile-item">
+                        <label>Member Since:</label>
+                        <span>Today</span>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <a href="/" class="view-details-btn">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
