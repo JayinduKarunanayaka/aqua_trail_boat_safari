@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users - Aqua Trail Boat Safari</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-y: auto; /* Changed from hidden to auto for scrolling */
+        }
+        
+        /* Glossy water effect overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 
+                        0 5px 15px rgba(0, 0, 0, 0.15),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1a2980;
+        }
+        
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .page-title {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+            border: none;
+        }
+        
+        .back-link:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .user-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(26, 41, 128, 0.5);
+        }
+        
+        .user-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .user-role {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .role-admin {
+            background: rgba(255, 235, 238, 0.92);
+            color: #c62828;
+        }
+        
+        .role-captain {
+            background: rgba(227, 242, 253, 0.92);
+            color: #1976d2;
+        }
+        
+        .role-booking {
+            background: rgba(232, 245, 233, 0.92);
+            color: #2e7d32;
+        }
+        
+        .role-manager {
+            background: rgba(255, 248, 225, 0.92);
+            color: #f9a825;
+        }
+        
+        .role-marketing {
+            background: rgba(243, 229, 245, 0.92);
+            color: #7b1fa2;
+        }
+        
+        .user-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .detail-value {
+            color: #2c3e50;
+            word-break: break-all;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(26, 41, 128, 0.3);
+        }
+        
+        .update-btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+        }
+        
+        .update-btn:hover {
+            background: linear-gradient(135deg, #152266 0%, #1fb4b0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(26, 41, 128, 0.4);
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-success {
+            background: rgba(212, 237, 218, 0.92);
+            color: #155724;
+            border: 1px solid rgba(195, 230, 203, 0.5);
+        }
+        
+        .alert-error {
+            background: rgba(248, 215, 218, 0.92);
+            color: #721c24;
+            border: 1px solid rgba(245, 198, 203, 0.5);
+        }
+        
+        .no-users {
+            text-align: center;
+            padding: 40px;
+            color: #555;
+            font-size: 1.2rem;
+        }
+        
+        .search-box {
+            margin-bottom: 25px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #1a2980;
+            box-shadow: 0 0 0 3px rgba(26, 41, 128, 0.15), 
+                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        
+        .form-info {
+            background: rgba(227, 242, 253, 0.92);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #1a2980;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-info h4 {
+            margin: 0 0 10px 0;
+            color: #1a2980;
+        }
+        
+        .form-info p {
+            margin: 0;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+            .user-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/staff/admin" class="back-link">← Back to Admin Dashboard</a>
+        
+        <div class="header">
+            <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+            <h2 class="page-title">👥 Manage Users</h2>
+            <p style="color: #555;">Admin: <strong th:text="${staff.name}">Admin Name</strong></p>
+        </div>
+
+        <div class="form-info">
+            <h4>📋 User Management</h4>
+            <p>View, update, and delete staff members. Note that you cannot delete yourself.</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div th:if="${allStaff != null and !allStaff.empty}">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search users by name or role...">
+            </div>
+            
+            <div class="users-grid">
+                <div class="user-card" th:each="user : ${allStaff}" th:attr="data-user-name=${user.name}, data-user-role=${user.role}">
+                    <div class="user-name" th:text="${user.name}">User Name</div>
+                    <div class="user-role" th:class="'user-role role-' + ${user.role}" th:text="${user.role}">Role</div>
+                    
+                    <div class="user-detail">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value" th:text="${user.email}">user@example.com</span>
+                    </div>
+                    
+                    <div class="user-detail">
+                        <span class="detail-label">ID:</span>
+                        <span class="detail-value" th:text="${user.id}">123</span>
+                    </div>
+                    
+                    <div class="user-actions">
+                        <button class="action-btn update-btn" th:attr="data-user-id=${user.id}">✏️ Update</button>
+                        <button class="action-btn delete-btn" th:attr="data-user-id=${user.id}, data-user-name=${user.name}" 
+                                th:disabled="${user.id == staff.id}">🗑️ Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div th:unless="${allStaff != null and !allStaff.empty}" class="no-users">
+            <h3>No staff members found</h3>
+            <p>There are currently no staff members in the database.</p>
+        </div>
+    </div>
+
+    <script>
+        // Update button click handler
+        document.querySelectorAll('.update-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                window.location.href = `/staff/admin/edit-user?staffId=${userId}`;
+            });
+        });
+
+        // Delete button click handler
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                const userName = this.getAttribute('data-user-name');
+                
+                if (confirm(`Are you sure you want to delete the user "${userName}"? This action cannot be undone.`)) {
+                    // Disable button and show loading
+                    const originalText = this.textContent;
+                    this.disabled = true;
+                    this.textContent = 'Deleting...';
+                    
+                    // Remove any existing alerts
+                    const existingAlert = document.getElementById('alertContainer').querySelector('.alert');
+                    if (existingAlert) {
+                        existingAlert.remove();
+                    }
+                    
+                    fetch('/staff/admin/delete-user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `staffId=${userId}`
+                    })
+                    .then(response => response.text())
+                    .then(result => {
+                        if (result === 'success') {
+                            // Show success message
+                            const alert = document.createElement('div');
+                            alert.className = 'alert alert-success';
+                            alert.textContent = `✅ User "${userName}" deleted successfully!`;
+                            
+                            document.getElementById('alertContainer').appendChild(alert);
+                            
+                            // Remove the user card from the UI
+                            this.closest('.user-card').remove();
+                            
+                            // Check if no users left
+                            const usersGrid = document.querySelector('.users-grid');
+                            if (usersGrid && usersGrid.children.length === 0) {
+                                usersGrid.innerHTML = `
+                                    <div class="no-users">
+                                        <h3>No staff members found</h3>
+                                        <p>All staff members have been deleted.</p>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            throw new Error(result.replace('error: ', ''));
+                        }
+                    })
+                    .catch(error => {
+                        // Show error message
+                        const alert = document.createElement('div');
+                        alert.className = 'alert alert-error';
+                        alert.textContent = '❌ Error: ' + error.message;
+                        
+                        document.getElementById('alertContainer').appendChild(alert);
+                        
+                        // Re-enable button
+                        this.disabled = false;
+                        this.textContent = originalText;
+                    });
+                }
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const userCards = document.querySelectorAll('.user-card');
+            
+            userCards.forEach(card => {
+                const userName = card.getAttribute('data-user-name').toLowerCase();
+                const userRole = card.getAttribute('data-user-role').toLowerCase();
+                
+                if (userName.includes(searchTerm) || userRole.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

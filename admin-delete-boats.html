@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Boats - Aqua Trail Boat Safari</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-y: auto; /* Changed from hidden to auto for scrolling */
+        }
+        
+        /* Glossy water effect overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 25%),
+                radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), 
+                        0 5px 15px rgba(0, 0, 0, 0.15),
+                        inset 0 0 20px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1a2980;
+        }
+        
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .page-title {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+            border: none;
+        }
+        
+        .back-link:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .boats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .boat-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+        }
+        
+        .boat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(26, 41, 128, 0.5);
+        }
+        
+        .boat-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .boat-type {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(227, 242, 253, 0.92);
+            color: #1a2980;
+            margin-bottom: 15px;
+        }
+        
+        .boat-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .detail-value {
+            color: #2c3e50;
+        }
+        
+        .boat-description {
+            margin: 15px 0;
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            background: rgba(248, 249, 250, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #1a2980;
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+        }
+        
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #e03a5f 0%, #e04427 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 65, 108, 0.4);
+        }
+        
+        .delete-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-success {
+            background: rgba(212, 237, 218, 0.92);
+            color: #155724;
+            border: 1px solid rgba(195, 230, 203, 0.5);
+        }
+        
+        .alert-error {
+            background: rgba(248, 215, 218, 0.92);
+            color: #721c24;
+            border: 1px solid rgba(245, 198, 203, 0.5);
+        }
+        
+        .no-boats {
+            text-align: center;
+            padding: 40px;
+            color: #555;
+            font-size: 1.2rem;
+        }
+        
+        .status-active {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        
+        .status-maintenance {
+            color: #f39c12;
+            font-weight: 600;
+        }
+        
+        .status-retired {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .form-info {
+            background: rgba(227, 242, 253, 0.92);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #1a2980;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-info h4 {
+            margin: 0 0 10px 0;
+            color: #1a2980;
+        }
+        
+        .form-info p {
+            margin: 0;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            .boats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/staff/admin" class="back-link">← Back to Admin Dashboard</a>
+        
+        <div class="header">
+            <h1 class="brand-title">🚤 Aqua Trail Boat Safari</h1>
+            <h2 class="page-title">🗑️ Delete Boats</h2>
+            <p style="color: #555;">Admin: <strong th:text="${staff.name}">Admin Name</strong></p>
+        </div>
+
+        <div class="form-info">
+            <h4>📋 Boat Deletion Information</h4>
+            <p>Select a boat below to permanently remove it from the database. Note that boats assigned to trips cannot be deleted.</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div th:if="${boats != null and !boats.empty}">
+            <div class="boats-grid">
+                <div class="boat-card" th:each="boat : ${boats}">
+                    <div class="boat-name" th:text="${boat.name}">Boat Name</div>
+                    <div class="boat-type" th:text="${boat.type}">Boat Type</div>
+                    
+                    <div class="boat-detail">
+                        <span class="detail-label">Capacity:</span>
+                        <span class="detail-value" th:text="${boat.capacity}">0</span>
+                    </div>
+                    
+                    <div class="boat-detail">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value" th:class="'status-' + ${boat.status}" th:text="${boat.status}">Status</span>
+                    </div>
+                    
+                    <div class="boat-description" th:text="${boat.description}">Boat description...</div>
+                    
+                    <button class="delete-btn" th:attr="data-boat-id=${boat.id}" th:text="${boat.status == 'active' ? '🗑️ Delete Boat' : '🗑️ Delete Boat'}">🗑️ Delete Boat</button>
+                </div>
+            </div>
+        </div>
+        
+        <div th:unless="${boats != null and !boats.empty}" class="no-boats">
+            <h3> No boats available for deletion</h3>
+            <p>There are currently no boats in the database.</p>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const boatId = this.getAttribute('data-boat-id');
+                const boatName = this.closest('.boat-card').querySelector('.boat-name').textContent;
+                
+                if (confirm(`Are you sure you want to delete the boat "${boatName}"? This action cannot be undone.`)) {
+                    // Disable button and show loading
+                    const originalText = this.textContent;
+                    this.disabled = true;
+                    this.textContent = 'Deleting...';
+                    
+                    // Remove any existing alerts
+                    const existingAlert = document.getElementById('alertContainer').querySelector('.alert');
+                    if (existingAlert) {
+                        existingAlert.remove();
+                    }
+                    
+                    fetch('/staff/admin/delete-boat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `boatId=${boatId}`
+                    })
+                    .then(response => response.text())
+                    .then(result => {
+                        if (result === 'success') {
+                            // Show success message
+                            const alert = document.createElement('div');
+                            alert.className = 'alert alert-success';
+                            alert.textContent = `✅ Boat "${boatName}" deleted successfully!`;
+                            
+                            document.getElementById('alertContainer').appendChild(alert);
+                            
+                            // Remove the boat card from the UI
+                            this.closest('.boat-card').remove();
+                            
+                            // Check if no boats left
+                            const boatsGrid = document.querySelector('.boats-grid');
+                            if (boatsGrid && boatsGrid.children.length === 0) {
+                                boatsGrid.innerHTML = `
+                                    <div class="no-boats">
+                                        <h3>No boats available for deletion</h3>
+                                        <p>All boats have been deleted.</p>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            throw new Error(result.replace('error: ', ''));
+                        }
+                    })
+                    .catch(error => {
+                        // Show error message
+                        const alert = document.createElement('div');
+                        alert.className = 'alert alert-error';
+                        alert.textContent = '❌ Error: ' + error.message;
+                        
+                        document.getElementById('alertContainer').appendChild(alert);
+                        
+                        // Re-enable button
+                        this.disabled = false;
+                        this.textContent = originalText;
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
